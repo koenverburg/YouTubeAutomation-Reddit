@@ -19,6 +19,7 @@ def get_screenshots_of_reddit_posts(reddit_thread, reddit_comments, screenshot_n
     H = 1920
 
     reddit_id = re.sub(r"[^\w\s-]", "", reddit_thread.id)
+    print(f"Reddit Id: {reddit_id}")
     # ! Make sure the reddit screenshots folder exists
     Path(f"./Assets/temp/{reddit_id}/png").mkdir(parents=True, exist_ok=True)
 
@@ -26,7 +27,7 @@ def get_screenshots_of_reddit_posts(reddit_thread, reddit_comments, screenshot_n
     with sync_playwright() as p:
         print("Launching Headless Browser...")
 
-        browser = p.chromium.launch(headless=True)  # headless=False #to check for chrome view
+        browser = p.chromium.launch(headless=False)  # headless=False #to check for chrome view
         context = browser.new_context()
         my_config = config.load_config()
         # Device scale factor (or dsf for short) allows us to increase the resolution of the screenshots
@@ -59,34 +60,40 @@ def get_screenshots_of_reddit_posts(reddit_thread, reddit_comments, screenshot_n
         # go to reddit's login page
         page.goto("https://www.reddit.com/login/?experiment_d2x_2020ify_buttons=enabled&use_accountmanager=true&experiment_d2x_google_sso_gis_parity=enabled&experiment_d2x_onboarding=enabled&experiment_d2x_am_modal_design_update=enabled")
         # fill user info
+        time.sleep(3)
         page.locator("id=loginUsername").fill(my_config["RedditCredential"]["username"])
+        time.sleep(3)
         page.locator("id=loginPassword").fill(my_config["RedditCredential"]["passkey"])
+        time.sleep(3)
         page.get_by_role("button", name="Log In").click()
-        time.sleep(10)
+        time.sleep(3)
         # go to the thread
         page.goto("https://www.reddit.com" + reddit_thread.permalink, timeout=0)
-        time.sleep(10)
+        time.sleep(3)
         page.keyboard.press("Escape")
         
         page.goto("https://www.reddit.com" + reddit_thread.permalink, timeout=0)
         page.set_viewport_size(ViewportSize(width=W, height=H))
 
         postcontentpath = f"./Assets/temp/{reddit_id}/png/title.png"
-        page.locator(f'[data-test-id="post-content"]').screenshot(path=postcontentpath)
+        time.sleep(1)
+        page.locator('shreddit-post').screenshot(path=postcontentpath)
+        # page.locator(f'id=-post-rtjson-content').screenshot(path=postcontentpath)
+        # page.locator(f'[data-test-id="post-content"]').screenshot(path=postcontentpath)
+        time.sleep(1)
         print("Screenshot for OP completed")
 
-
-
         for idx, comment in enumerate(reddit_comments):
-
-
             if page.locator('[data-testid="content-gate"]').is_visible():
                 page.locator('[data-testid="content-gate"] button').click()
+
+            print(f"Comment Id: {comment.id}")
+            print(f"Url: https://reddit.com{comment.permalink}")
 
             page.goto(f'https://reddit.com{comment.permalink}', timeout=0)
 
             try:
-                page.locator(f"#t1_{comment.id}").screenshot(
+                page.locator(f"#t3_{reddit_id}").screenshot(
                     path=f"./Assets/temp/{reddit_id}/png/{idx}.png"
                 )
                 print(f"Screenshot for {idx + 1} comment out of {len(reddit_comments)}")
