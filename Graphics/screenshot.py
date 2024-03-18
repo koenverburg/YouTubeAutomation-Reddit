@@ -75,6 +75,8 @@ def get_screenshots_of_reddit_posts(reddit_thread, reddit_comments, screenshot_n
         page.goto("https://www.reddit.com" + reddit_thread.permalink, timeout=0)
         page.set_viewport_size(ViewportSize(width=W, height=H))
 
+        print(f"Reddit Page https://www.reddit.com{reddit_thread.permalink}")
+
         postcontentpath = f"./Assets/temp/{reddit_id}/png/title.png"
         time.sleep(1)
         page.locator('shreddit-post').screenshot(path=postcontentpath)
@@ -88,12 +90,17 @@ def get_screenshots_of_reddit_posts(reddit_thread, reddit_comments, screenshot_n
                 page.locator('[data-testid="content-gate"] button').click()
 
             print(f"Comment Id: {comment.id}")
-            print(f"Url: https://reddit.com{comment.permalink}")
+            # print(f"Url: https://reddit.com{comment.permalink}")
+            print(f'URL: https://www.reddit.com/svc/shreddit/comment/t1_{comment.id}?depth=0')
 
-            page.goto(f'https://reddit.com{comment.permalink}', timeout=0)
+            # https://www.reddit.com/svc/shreddit/comment/t1_kudf30t?depth=0&subredditName=AskReddit
+
+            page.goto(f'https://www.reddit.com/svc/shreddit/comment/t1_{comment.id}?depth=0', timeout=0)
+            page.set_viewport_size(ViewportSize(width=640, height=H))
+            # page.goto(f'https://reddit.com{comment.permalink}', timeout=0)
 
             try:
-                page.locator(f"#t3_{reddit_id}").screenshot(
+                page.locator(f"[thingid=t1_{comment.id}]").screenshot(
                     path=f"./Assets/temp/{reddit_id}/png/{idx}.png"
                 )
                 print(f"Screenshot for {idx + 1} comment out of {len(reddit_comments)}")
